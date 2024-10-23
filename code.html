@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Gerador de QR Code</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #D3D3D3;/*linear-gradient(10deg, rgb(185, 232, 185) 10%, #fcf9f9);*/
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            height: 260px;
+            background: #7497c5;
+            max-width: 410px;
+            border-radius: 7px;
+            padding: 16px 25px;
+            display: flex;
+            transition: height 0.5s ease;
+            align-items: center;
+        }
+
+        .container.activer {
+            height: 530px;
+        }
+
+        .form input, .form button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .form input[type="text"] {
+            margin-bottom: 20px;
+            padding: 10px; 
+            box-sizing: border-box; 
+            width: 300px; 
+            font-size: 16px;
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+        }
+
+        header h1 {
+            text-align: center;
+            font-weight: 600;
+            font-size: 28px;
+        }
+
+        .container .form {
+            padding: 20px 0 25px;
+        }
+
+        .container :where(input,button) {
+            width: 100%;
+            height: 55px;
+            border: none;
+            outline: none;
+            border-radius: 6px;
+        }
+
+        .form input {
+            padding: 0 17px;
+            font-size: 18px;
+            border: 1px solid #999;
+            transition: border-color 0.3s;
+        }
+
+        .form input:focus {
+            border-color: #237b23;
+        }
+
+        .form button {
+            color: #fff;
+            background: #237b23;
+            margin-top: 20px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+        }
+
+        .form button:hover {
+            background: #8ce3ef;
+        }
+
+        .container .qr-code {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 33px 0;
+            pointer-events: none;
+            opacity: 0;
+            border: 1px solid #ccc;
+        }
+
+        .qr-code img {
+            width: 200px;
+            height: auto;
+        }
+
+        .container.activer .qr-code {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.5s 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <main id="app">
+        <header>
+            <h1>Gerador QR Code</h1>
+        </header>
+        <div class="container" :class="{ activer: qrCodeUrl }">
+            <div class="form" v-if="!qrCodeUrl">
+                <input type="text" v-model="qrValue" placeholder="Seu nome ou matrícula">
+                <button @click="gerarQrCode">{{ buttonText }}</button>
+            </div>
+            <div class="qr-code" v-if="qrCodeUrl">
+                <img :src="qrCodeUrl" alt="QR Code" @load="onImageLoad" @error="onImageError">
+                <button @click="reset">Gerar Novo QR Code</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                qrValue: '',
+                qrCodeUrl: '',
+                buttonText: 'Gerar QR Code'
+            },
+            methods: {
+                gerarQrCode() {
+                    if (!this.qrValue) return;
+                    this.qrCodeUrl = ''; // Limpa a imagem anterior
+                    this.buttonText = "Gerando..."; // Atualiza o texto do botão
+                    this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(this.qrValue)}`;
+                },
+                onImageLoad() {
+                    this.buttonText = "Gerar QR Code"; // Restaura o texto ao carregar a imagem
+                },
+                onImageError() {
+                    this.buttonText = "Gerar QR Code"; // Restaura o texto em caso de erro
+                    alert("Erro ao gerar o QR Code. Tente novamente.");
+                },
+                reset() {
+                    this.qrValue = '';
+                    this.qrCodeUrl = '';
+                    this.buttonText = 'Gerar QR Code'; // Restaura o texto do botão
+                }
+            },
+            watch: {
+                qrValue(newValue) {
+                    if (!newValue) {
+                        this.qrCodeUrl = ''; // Limpa o QR Code se o input estiver vazio
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
